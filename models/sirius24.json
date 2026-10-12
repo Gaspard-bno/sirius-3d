@@ -1,0 +1,87 @@
+{
+ "id": "sirius24",
+ "nom": "SIRIUS 24 m²",
+ "accroche": "Studio · sur-toiture bois",
+ "dims": "6,00 × 4,00 m",
+ "surface": "24 m²",
+ "caracteristiques": [
+  "Studio avec lit 160",
+  "Salle d’eau + WC",
+  "Cuisine équipée",
+  "Porte-fenêtre 2 vantaux",
+  "Sur-toiture bois (charpente brute)",
+  "Terrasse 3,60 × 2,15 m"
+ ],
+ "teintes": [
+  {
+   "ral": "6019",
+   "hex": "#A1C3A9",
+   "nom": "Vert pastel"
+  },
+  {
+   "ral": "1014",
+   "hex": "#F6EACE",
+   "nom": "Ivoire"
+  },
+  {
+   "ral": "1001",
+   "hex": "#DCB68C",
+   "nom": "Beige"
+  },
+  {
+   "ral": "7032",
+   "hex": "#D0C8BE",
+   "nom": "Gris silex"
+  },
+  {
+   "ral": "5024",
+   "hex": "#92B0AE",
+   "nom": "Bleu pastel"
+  }
+ ],
+ "materiaux_teintables": [
+  "Bardage",
+  "Menuiseries"
+ ],
+ "noeud_toit": "Toit",
+ "levee_toit": 2.0,
+ "vignette": "sirius24.jpg",
+ "pieces": [
+  {
+   "nom": "Pièce de vie",
+   "surface": "≈ 15 m²",
+   "position": [
+    1.3,
+    1.47,
+    0.6
+   ]
+  },
+  {
+   "nom": "Salle d’eau",
+   "surface": "≈ 4 m²",
+   "position": [
+    -2.15,
+    1.47,
+    -0.3
+   ]
+  },
+  {
+   "nom": "WC",
+   "surface": "≈ 1,5 m²",
+   "position": [
+    -0.4,
+    1.47,
+    -1.5
+   ]
+  },
+  {
+   "nom": "Terrasse",
+   "surface": "3,60 × 2,15 m",
+   "position": [
+    0.45,
+    1.47,
+    3.07
+   ]
+  }
+ ]
+}

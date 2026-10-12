@@ -1,0 +1,106 @@
+{
+ "id": "sirius40",
+ "nom": "SIRIUS 40 m²",
+ "accroche": "2 chambres · pignon vitré",
+ "dims": "10,00 × 4,37 m",
+ "surface": "40 m²",
+ "caracteristiques": [
+  "2 chambres",
+  "Salle d’eau + WC séparé",
+  "Pièce de vie 21,4 m²",
+  "Verrière en pignon",
+  "Toiture imitation zinc",
+  "Terrasse surélevée"
+ ],
+ "teintes": [
+  {
+   "ral": "6019",
+   "hex": "#A1C3A9",
+   "nom": "Vert pastel"
+  },
+  {
+   "ral": "1014",
+   "hex": "#F6EACE",
+   "nom": "Ivoire"
+  },
+  {
+   "ral": "1001",
+   "hex": "#DCB68C",
+   "nom": "Beige"
+  },
+  {
+   "ral": "7032",
+   "hex": "#D0C8BE",
+   "nom": "Gris silex"
+  },
+  {
+   "ral": "5024",
+   "hex": "#92B0AE",
+   "nom": "Bleu pastel"
+  }
+ ],
+ "materiaux_teintables": [
+  "Bardage",
+  "Cadre lisse",
+  "Menuiseries"
+ ],
+ "noeud_toit": "Toit",
+ "levee_toit": 2.2,
+ "vignette": "sirius40.jpg",
+ "pieces": [
+  {
+   "nom": "Pièce de vie",
+   "surface": "21,4 m²",
+   "position": [
+    -3.1,
+    1.82,
+    -0.014
+   ]
+  },
+  {
+   "nom": "Chambre 1",
+   "surface": "6,7 m²",
+   "position": [
+    3.9,
+    1.82,
+    0.836
+   ]
+  },
+  {
+   "nom": "Chambre 2",
+   "surface": "5,7 m²",
+   "position": [
+    0.75,
+    1.82,
+    0.886
+   ]
+  },
+  {
+   "nom": "Salle d’eau",
+   "surface": "3,3 m²",
+   "position": [
+    3.85,
+    1.82,
+    -1.264
+   ]
+  },
+  {
+   "nom": "WC",
+   "surface": "1 m²",
+   "position": [
+    2.35,
+    1.82,
+    -1.664
+   ]
+  },
+  {
+   "nom": "Terrasse",
+   "surface": "≈ 15,9 m²",
+   "position": [
+    -6.5,
+    1.82,
+    -0.0
+   ]
+  }
+ ]
+}
