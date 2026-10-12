@@ -158,7 +158,7 @@ function prechargerModele(id) {
   return p;
 }
 
-const etat = { id: null, m: null, vue: 'ext', toit: false, interagi: false, teinte: null };
+const etat = { id: null, m: null, vue: 'ext', toit: false, interagi: false, teinte: null, ambiance: 'jour' };
 let M = null; // moteur
 const prepares = {};
 
@@ -221,7 +221,7 @@ function creerMoteur() {
   contact.renderOrder = -1;
   scene.add(sol, contact);
 
-  M = { renderer, scene, camera, controls, soleil, contre, sol, contact, sale: true, actif: false, decalage: { x: 0, y: 0, hv: 1, wv: 1 } };
+  M = { renderer, scene, camera, controls, hemi, soleil, contre, sol, contact, cadre: null, sale: true, actif: false, decalage: { x: 0, y: 0, hv: 1, wv: 1 } };
 
   controls.addEventListener('start', () => {
     annulerTween('cam');
@@ -337,7 +337,18 @@ function preparer(gltf, f) {
   });
   const bTout = boite(racine);
   const bCorps = toit ? boite(racine, toit) : bTout;
-  return { racine, toit, toitY0: toit ? toit.position.y : 0, matsToit, teintables, bTout, bCorps, f, opaciteToit: 1 };
+  const lampes = f.pieces.map((p) => {
+    const l = new THREE.PointLight(0xffc48a, 0, 6, 2);
+    l.position.set(p.position[0], p.position[1] + 0.35, p.position[2]);
+    racine.add(l);
+    return l;
+  });
+  const lumineux = [];
+  racine.traverse((o) => {
+    if (!o.isMesh) return;
+    for (const m of [].concat(o.material)) if (m.name in EMISSIFS && !lumineux.includes(m)) { m.emissive.set(EMISSIFS[m.name]); lumineux.push(m); }
+  });
+  return { racine, toit, toitY0: toit ? toit.position.y : 0, matsToit, teintables, bTout, bCorps, f, opaciteToit: 1, lampes, lumineux };
 }
 
 /* -------- vues caméra -------- */
@@ -440,6 +451,50 @@ function choisirVue(nom) {
   if (nom === 'ext') bougerToit(false);
   else bougerToit(true, nom === 'plan' ? 0 : 0.22);
   allerA(nom);
+}
+
+/* -------- ambiances -------- */
+const EMISSIFS = { Applique: 0xffc487, 'Ampoule guirlande': 0xffc27a, Lanterne: 0xffb866, 'Abat jour': 0xffd9a8 };
+const AMBIANCES = {
+  jour: { expo: 1.0, env: 0.9, hemi: [0xdfe7ff, 0.45], soleil: [0xfff4e6, 2.4], dir: [-0.55, 1.15, 0.8], contre: [0xbcd2ff, 0.6], ombre: 0.3, lampe: 0,
+          emis: { Applique: 3, 'Ampoule guirlande': 0, Lanterne: 0, 'Abat jour': 0 } },
+  soir: { expo: 1.05, env: 0.38, hemi: [0xffc9a0, 0.3], soleil: [0xff9248, 2.0], dir: [-0.95, 0.38, 0.55], contre: [0x7d98ff, 0.35], ombre: 0.38, lampe: 3.5,
+          emis: { Applique: 9, 'Ampoule guirlande': 7, Lanterne: 6, 'Abat jour': 1.6 } },
+  nuit: { expo: 1.15, env: 0.07, hemi: [0x5d70aa, 0.16], soleil: [0x9fb6ff, 0.35], dir: [0.4, 1.2, 0.6], contre: [0x4c66c4, 0.2], ombre: 0.18, lampe: 6,
+          emis: { Applique: 16, 'Ampoule guirlande': 12, Lanterne: 9, 'Abat jour': 3 } },
+};
+function placerSoleil(dir) {
+  if (!M.cadre) return;
+  const { c, r } = M.cadre;
+  M.soleil.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(r * 3));
+}
+function appliquerAmbiance(nom, duree = 700) {
+  const a = AMBIANCES[nom] || AMBIANCES.jour;
+  etat.ambiance = nom;
+  $('#vue').dataset.ambiance = nom;
+  document.querySelectorAll('.ambiance button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ambiance === nom)));
+  if (!M) return;
+  const m = etat.m;
+  const d = {
+    expo: M.renderer.toneMappingExposure, env: M.scene.environmentIntensity, ombre: M.sol.material.opacity,
+    hemi: [M.hemi.color.clone(), M.hemi.intensity], soleil: [M.soleil.color.clone(), M.soleil.intensity], contre: [M.contre.color.clone(), M.contre.intensity],
+    dir: M.cadre ? M.soleil.position.clone().sub(M.cadre.c).normalize() : new THREE.Vector3(...a.dir),
+    lampe: m?.lampes[0]?.intensity ?? 0, emis: m ? m.lumineux.map((x) => x.emissiveIntensity) : [],
+  };
+  const cible = (k) => new THREE.Color(a[k][0]);
+  const dir = new THREE.Vector3(...a.dir).normalize();
+  const lerp = (x, y, p) => x + (y - x) * p;
+  tween('ambiance', duree, (p) => {
+    M.renderer.toneMappingExposure = lerp(d.expo, a.expo, p);
+    M.scene.environmentIntensity = lerp(d.env, a.env, p);
+    M.sol.material.opacity = lerp(d.ombre, a.ombre, p);
+    for (const k of ['hemi', 'soleil', 'contre']) { M[k].color.lerpColors(d[k][0], cible(k), p); M[k].intensity = lerp(d[k][1], a[k][1], p); }
+    placerSoleil(d.dir.clone().lerp(dir, p).toArray());
+    if (m) {
+      m.lampes.forEach((l) => { l.intensity = lerp(d.lampe, a.lampe, p); });
+      m.lumineux.forEach((x, i) => { x.emissiveIntensity = lerp(d.emis[i], a.emis[x.name] ?? 0, p); });
+    }
+  }, easeInOut);
 }
 
 /* -------- teintes -------- */
@@ -645,7 +700,8 @@ function afficherModele(m, teinte, entree) {
   const tCorps = m.bCorps.getSize(new THREE.Vector3()), cCorps = m.bCorps.getCenter(new THREE.Vector3());
   M.contact.position.set(cCorps.x, b.min.y + 0.004, cCorps.z);
   M.contact.scale.set(tCorps.x * 1.5, tCorps.z * 1.7, 1);
-  M.soleil.position.copy(c).add(new THREE.Vector3(-0.55, 1.15, 0.8).normalize().multiplyScalar(r * 3));
+  M.cadre = { c: c.clone(), r };
+  placerSoleil(AMBIANCES[etat.ambiance].dir);
   M.soleil.target.position.copy(c);
   const sc = M.soleil.shadow.camera;
   sc.left = sc.bottom = -r * 1.25; sc.right = sc.top = r * 1.25; sc.near = r * 0.5; sc.far = r * 6;
@@ -653,6 +709,7 @@ function afficherModele(m, teinte, entree) {
   M.contre.position.copy(c).add(new THREE.Vector3(0.8, 0.6, -1).multiplyScalar(r * 2));
 
   appliquerTeinte(teinte, 0);
+  appliquerAmbiance(etat.ambiance, 0);
 
   // caméra : travelling d'arrivée à la première ouverture
   redimensionner();
@@ -688,6 +745,7 @@ function fermerFiche() {
 }
 $('#toit').addEventListener('click', () => choisirVue(etat.toit ? 'ext' : 'int'));
 document.querySelectorAll('.vues button').forEach((b) => b.addEventListener('click', () => choisirVue(b.dataset.vue)));
+document.querySelectorAll('.ambiance button').forEach((b) => b.addEventListener('click', () => appliquerAmbiance(b.dataset.ambiance)));
 $('#titre').addEventListener('click', () => {
   if (matchMedia('(min-width: 900px)').matches) return;
   const ouverte = $('#fiche').classList.toggle('ouverte');
@@ -709,6 +767,7 @@ window.sirius = {
   get toitLeve() { return etat.toit; },
   get toitPresent() { return !!etat.m?.toit; },
   get teinte() { return etat.teinte; },
+  get ambiance() { return etat.ambiance; },
   couleur(nom) {
     const mat = etat.m?.teintables.find((x) => x.name === nom);
     return mat ? '#' + mat.color.getHexString() : null;

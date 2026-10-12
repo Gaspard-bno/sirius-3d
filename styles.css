@@ -225,7 +225,7 @@ body[data-ecran="vue"] .menu { display: none; }
 }
 #scene {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  touch-action: none; outline: none;
+  z-index: 1; touch-action: none; outline: none;
   opacity: 0; transition: opacity 1s var(--ease);
 }
 .vue.prete #scene { opacity: 1; }
@@ -318,6 +318,33 @@ body[data-ecran="vue"] .menu { display: none; }
 .aide.cachee { opacity: 0; transform: translate(-50%, 6px); }
 .aide-souris { display: none; }
 @media (hover: hover) and (pointer: fine) { .aide-tactile { display: none; } .aide-souris { display: inline; } }
+
+.ambiance {
+  position: absolute; z-index: 3; right: 12px; top: 50%; transform: translateY(-62%);
+  display: grid; gap: 4px; padding: 6px 5px 5px; border-radius: 18px; box-shadow: var(--ombre);
+}
+.ambiance-lab { font: 500 8.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--argent); text-align: center; padding: 2px 0 3px; }
+.ambiance button {
+  width: 54px; min-height: 50px; border-radius: 13px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font: 600 10.5px/1 var(--titre); color: var(--argent);
+  transition: background .3s, color .3s, box-shadow .3s;
+}
+.ambiance button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ambiance button[aria-pressed="true"] { background: rgba(231, 233, 241, .12); color: #fff; box-shadow: inset 0 0 0 1px rgba(31, 159, 250, .55); }
+.ambiance button[data-ambiance="soir"][aria-pressed="true"] { color: #FFC08A; box-shadow: inset 0 0 0 1px rgba(255, 156, 84, .6); }
+.ambiance button[data-ambiance="nuit"][aria-pressed="true"] { color: #C9D6FF; }
+@media (max-width: 899px) {
+  .ambiance { top: calc(var(--haut) + 58px); left: 12px; right: auto; transform: none; grid-auto-flow: column; padding: 4px; border-radius: 16px; }
+  .ambiance-lab { display: none; }
+  .ambiance button { width: 50px; min-height: 44px; gap: 3px; font-size: 10px; }
+  .ambiance button svg { width: 17px; height: 17px; }
+}
+.vue::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .8s var(--ease);
+}
+.vue[data-ambiance="soir"]::after { opacity: 1; background: radial-gradient(70% 45% at 30% 70%, rgba(255, 138, 64, .16), transparent 70%); }
+.vue[data-ambiance="nuit"]::after { opacity: 1; background: rgba(2, 4, 12, .45); }
 
 /* Dock */
 .dock {
@@ -445,6 +472,8 @@ body[data-ecran="vue"] .menu { display: none; }
     opacity: 1; transform: none; visibility: visible;
   }
   .ar { right: 20px; top: calc(max(20px, env(safe-area-inset-top)) + 64px); }
+  .ambiance { right: 20px; transform: translateY(-50%); }
+  .ambiance button { width: 62px; min-height: 56px; font-size: 11.5px; }
   .dock {
     left: 50%; right: auto; transform: translateX(-50%); bottom: max(20px, env(safe-area-inset-bottom));
     width: min(920px, calc(100% - 40px));
