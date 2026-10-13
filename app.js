@@ -158,7 +158,7 @@ function prechargerModele(id) {
   return p;
 }
 
-const etat = { id: null, m: null, vue: 'ext', toit: false, interagi: false, teinte: null, ambiance: 'jour' };
+const etat = { id: null, m: null, vue: 'ext', toit: false, interagi: false, teinte: null, ambiance: 'jour', site: true };
 let M = null; // moteur
 const prepares = {};
 
@@ -289,6 +289,7 @@ function boucle(now) {
   }
   if (!M.sale) return;
   M.sale = false;
+  couperVegetation();
   M.renderer.render(M.scene, M.camera);
   placerEtiquettes();
 }
@@ -426,7 +427,7 @@ function allerA(nom, duree = 1100, depart) {
   }, depart ? easeOut : easeInOut).then(() => {
     const r = etat.m.bTout.getBoundingSphere(new THREE.Sphere()).radius;
     ctl.minDistance = Math.min(r * 0.45, v.rayon);
-    ctl.maxDistance = Math.max(r * 4.5, v.rayon * 1.2);
+    ctl.maxDistance = Math.max(r * 4.5, v.rayon * 1.2, etat.site && SITE ? 230 : 0);
   });
 }
 
@@ -583,6 +584,173 @@ function suivreClic() {
   });
 }
 
+/* -------- environnement réel : Domaine des Oyats (IGN ortho + LiDAR HD + BD TOPO, cadastre, plan masse) -------- */
+const CIELS = { jour: 0xc3d5e6, soir: 0xe2ad86, nuit: 0x0c1428 };
+let SITE = null, sitePromesse = null;
+function chargerSite() {
+  if (EMBED) return Promise.resolve(null);
+  return (sitePromesse ??= fetch('models/site.json').then((r) => (r.ok ? r.json() : null)).catch(() => null));
+}
+const VW = (x, y, h = 0) => new THREE.Vector3(x, h, -y);
+let VERTS;  // verts de feuillage (pins maritimes, chênes verts, haies)
+function lodgeSimplifie(type, teinte) {
+  const g = new THREE.Group();
+  const mat = (c, r = 0.85) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+  const bard = mat(teinte), sombre = mat(0x2b2f35, 0.6), bois = mat(0x8a6446, 0.9), verre = mat(0x1d2633, 0.25);
+  const boite = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; g.add(o); return o; };
+  const prisme = (larg, haut, long, y, m) => {
+    const s = new THREE.Shape([new THREE.Vector2(-larg / 2, 0), new THREE.Vector2(larg / 2, 0), new THREE.Vector2(0, haut)]);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: long, bevelEnabled: false });
+    geo.translate(0, 0, -long / 2); geo.rotateY(Math.PI / 2);
+    const o = new THREE.Mesh(geo, m); o.position.y = y; o.castShadow = true; g.add(o); return o;
+  };
+  if (type === 'sirius40') {
+    boite(10, 2.3, 4.37, 0, 0.7 + 1.15, 0, bard);
+    prisme(4.75, 1.4, 10.2, 3.0, mat(0x7e848a, 0.5));
+    boite(0.05, 2.1, 3.6, -5.03, 1.85, 0, verre);
+    boite(2.6, 0.7, 4.0, -6.3, 0.35, 0, bois);
+    boite(9.6, 0.6, 3.9, 0, 0.3, 0, sombre);
+  } else {
+    boite(6, 2.55, 4, 0, 0.35 + 1.27, 0, bard);
+    boite(6.05, 0.08, 4.05, 0, 2.94, 0, sombre);
+    prisme(4.8, 0.97, 6.7, 3.08, bois);
+    boite(1.6, 2.1, 0.05, 0.45, 1.4, 2.03, verre);
+    boite(3.6, 0.34, 2.15, 0.4, 0.17, 3.07, bois);
+  }
+  return g;
+}
+function construireSite(s) {
+  VERTS = [0x3f5a2c, 0x4a6533, 0x56703a, 0x3a5230, 0x5d7440].map((c) => new THREE.Color(c));
+  const exterieur = new THREE.Group(), interieur = new THREE.Group();
+  exterieur.name = 'Domaine des Oyats';
+  exterieur.add(interieur);
+  const tex = new THREE.TextureLoader().load('models/site_ortho.jpg', () => { M.sale = true; });
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = M.renderer.capabilities.getMaxAnisotropy();
+  const ortho = new THREE.Mesh(new THREE.PlaneGeometry(s.ortho.l, s.ortho.h), new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
+  ortho.rotation.x = -Math.PI / 2; ortho.position.y = -0.03; ortho.receiveShadow = true;
+  const autour = new THREE.Mesh(new THREE.CircleGeometry(700, 64), new THREE.MeshStandardMaterial({ color: 0x46512f, roughness: 1 }));
+  autour.rotation.x = -Math.PI / 2; autour.position.y = -0.06; autour.receiveShadow = true;
+  interieur.add(ortho, autour);
+  // arbres : fût + houppier à la hauteur LiDAR
+  const n = s.arbres.length, mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), col = new THREE.Color(), haut = new THREE.Vector3(0, 1, 0);
+  const futs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.11, 0.2, 1, 7), new THREE.MeshStandardMaterial({ color: 0x5a4535, roughness: 0.95 }), n);
+  const houppiers = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 3), new THREE.MeshStandardMaterial({ roughness: 0.92 }), n);
+  s.arbres.forEach((a, i) => {
+    const hc = Math.min(a.r * 0.95, a.h * 0.42), hf = Math.max(1.4, a.h - 1.6 * hc), e = 0.8 + a.h / 18;
+    mtx.compose(VW(a.x, a.y, hf / 2), q.identity(), sc.set(e, hf, e)); futs.setMatrixAt(i, mtx);
+    q.setFromAxisAngle(haut, (i * 2.399) % (Math.PI * 2));
+    mtx.compose(VW(a.x, a.y, a.h - hc), q, sc.set(a.r, hc, a.r * (0.85 + (i % 5) * 0.06))); houppiers.setMatrixAt(i, mtx);
+    houppiers.setColorAt(i, col.set(a.c).lerp(VERTS[i % VERTS.length], 0.62));
+  });
+  futs.castShadow = houppiers.castShadow = true;
+  futs.frustumCulled = houppiers.frustumCulled = false;
+  // haies et arbustes (LiDAR 1 à 4,5 m)
+  const nh = s.haies.length;
+  const haies = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 2), new THREE.MeshStandardMaterial({ roughness: 0.95 }), nh);
+  s.haies.forEach((t, i) => {
+    q.setFromAxisAngle(haut, (i * 1.7) % (Math.PI * 2));
+    mtx.compose(VW(t.x, t.y, t.h / 2), q, sc.set(1.05, t.h / 2, 1.05)); haies.setMatrixAt(i, mtx);
+    haies.setColorAt(i, col.set(t.c).lerp(VERTS[(i * 7) % VERTS.length], 0.7));
+  });
+  haies.castShadow = true; haies.receiveShadow = true; haies.frustumCulled = false;
+  interieur.add(futs, houppiers, haies);
+  const inst = [
+    { m: futs, pos: s.arbres, base: futs.instanceMatrix.array.slice(), r: s.arbres.map((a) => a.r + 1.5) },
+    { m: houppiers, pos: s.arbres, base: houppiers.instanceMatrix.array.slice(), r: s.arbres.map((a) => a.r + 1.5) },
+    { m: haies, pos: s.haies, base: haies.instanceMatrix.array.slice(), r: s.haies.map(() => 2.2) },
+  ];
+  // constructions voisines (BD TOPO + volumes LiDAR)
+  const toit = new THREE.MeshStandardMaterial({ color: 0xb9bcbe, roughness: 0.7 }), mur = new THREE.MeshStandardMaterial({ color: 0xe6e1d8, roughness: 0.85 });
+  for (const b of s.batiments) {
+    const forme = new THREE.Shape(b.pts.map(([x, y]) => new THREE.Vector2(x, y)));
+    const geo = new THREE.ExtrudeGeometry(forme, { depth: b.h, bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2);
+    const o = new THREE.Mesh(geo, [toit, mur]); o.castShadow = o.receiveShadow = true;
+    interieur.add(o);
+  }
+  // lodges du plan masse (volumes simplifiés)
+  const lodges = s.lodges.map((l) => {
+    const o = lodgeSimplifie(l.type, l.teinte);
+    o.position.copy(VW(l.x, l.y)); o.rotation.y = l.rot; o.userData.lot = l.lot;
+    interieur.add(o);
+    return o;
+  });
+  return { exterieur, interieur, lodges, s, inst, camLocale: new THREE.Vector3(), derniere: new THREE.Vector3(1e9, 0, 0), derniereCible: new THREE.Vector3() };
+}
+async function majSite() {
+  if (!etat.m) return;
+  if (!SITE) {
+    const s = await chargerSite();
+    if (!s || !etat.m) { $('#bouton-site').hidden = $('#bouton-survol').hidden = true; return; }
+    SITE = construireSite(s);
+    M.scene.add(SITE.exterieur);
+  }
+  const emp = SITE.s.emplacements[etat.m.f.id];
+  const on = etat.site && !!emp;
+  SITE.exterieur.visible = on;
+  if (emp) {
+    SITE.exterieur.rotation.y = -emp.rot;
+    SITE.interieur.position.copy(VW(emp.x, emp.y)).negate();
+    SITE.lodges.forEach((o) => { o.visible = o.userData.lot !== emp.lot; });
+  }
+  M.sol.visible = !on;
+  M.scene.background = on ? new THREE.Color(CIELS[etat.ambiance]) : null;
+  M.scene.fog = on ? new THREE.Fog(CIELS[etat.ambiance], 70, 330) : null;
+  const sc = M.soleil.shadow.camera, r = etat.m.bTout.getBoundingSphere(new THREE.Sphere()).radius;
+  const t = on ? Math.max(r * 1.6, 16) : r * 1.25;
+  sc.left = sc.bottom = -t; sc.right = sc.top = t; sc.updateProjectionMatrix();
+  if (on && etat.vue !== 'visite') M.controls.maxDistance = Math.max(M.controls.maxDistance, 230);
+  $('#bouton-site').setAttribute('aria-pressed', String(on));
+  M.sale = true;
+}
+// végétation entre la caméra et le lodge : masquée quand elle est à quelques mètres de l'objectif (vue en coupe)
+function couperVegetation() {
+  if (!SITE || !SITE.exterieur.visible) return;
+  const c = SITE.interieur.worldToLocal(SITE.camLocale.copy(M.camera.position));
+  const t = SITE.interieur.worldToLocal(M.controls.target.clone());
+  if (c.distanceToSquared(SITE.derniere) < 0.04 && t.distanceToSquared(SITE.derniereCible) < 0.04) return;
+  SITE.derniere.copy(c); SITE.derniereCible.copy(t);
+  const visite = etat.vue === 'visite', loin = c.y > 60;
+  const sx = t.x - c.x, sz = t.z - c.z, l2 = sx * sx + sz * sz || 1;
+  for (const it of SITE.inst) {
+    const a = it.m.instanceMatrix.array;
+    it.pos.forEach((p, i) => {
+      // distance horizontale de la plante au segment caméra → lodge (jusqu'à 3 m avant le lodge)
+      const px = p.x - c.x, pz = -p.y - c.z;
+      const u = Math.max(0, Math.min(1, (px * sx + pz * sz) / l2));
+      const dx = px - u * sx, dz = pz - u * sz, r = it.r[i];
+      const avant = u < 1 - 3 / Math.sqrt(l2);
+      const cache = !visite && !loin && avant && dx * dx + dz * dz < r * r * 1.4;
+      for (let k = 0; k < 16; k++) a[i * 16 + k] = cache ? 0 : it.base[i * 16 + k];
+    });
+    it.m.instanceMatrix.needsUpdate = true;
+  }
+}
+function survoler() {
+  if (!SITE || !etat.m) return;
+  if (!etat.site) { etat.site = true; majSite(); }
+  if (etat.vue !== 'ext') choisirVue('ext');
+  const emp = SITE.s.emplacements[etat.m.f.id];
+  // centre du Domaine (moyenne des lodges) exprimé dans le repère du lodge présenté
+  const c = new THREE.Vector3();
+  SITE.s.lodges.forEach((l) => c.add(VW(l.x, l.y)));
+  c.divideScalar(SITE.s.lodges.length).sub(VW(emp.x, emp.y)).applyAxisAngle(new THREE.Vector3(0, 1, 0), -emp.rot);
+  const cam = M.camera, ctl = M.controls;
+  const de = { cible: ctl.target.clone(), sph: new THREE.Spherical().setFromVector3(cam.position.clone().sub(ctl.target)), fov: cam.fov };
+  const s = new THREE.Spherical(), cible = new THREE.Vector3();
+  ctl.minDistance = 0.1; ctl.maxDistance = 1000;
+  tween('cam', 2200, (p) => {
+    cible.lerpVectors(de.cible, c, p);
+    s.set(THREE.MathUtils.lerp(de.sph.radius, 175, p), THREE.MathUtils.lerp(de.sph.phi, 0.72, p), de.sph.theta + 0.5 * p);
+    cam.position.setFromSpherical(s).add(cible);
+    ctl.target.copy(cible);
+    cam.fov = THREE.MathUtils.lerp(de.fov, 38, p); cam.updateProjectionMatrix();
+    cam.lookAt(cible);
+  }).then(() => { ctl.minDistance = 2; ctl.maxDistance = 260; });
+  etat.interagi = true;
+}
+
 /* -------- toitures (24 m² : sur-toiture bois ou toit plat) -------- */
 const TOITURES = {
   sirius24: { objets: ['Charpente', 'Couverture bois', 'Gouttière avant', 'Gouttière arrière', 'Descente avant', 'Descente arrière', 'Coude avant', 'Coude arrière'] },
@@ -621,6 +789,7 @@ function appliquerAmbiance(nom, duree = 700) {
   $('#vue').dataset.ambiance = nom;
   document.querySelectorAll('.ambiance button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ambiance === nom)));
   if (!M) return;
+  if (SITE && SITE.exterieur.visible) { M.scene.background = new THREE.Color(CIELS[nom]); M.scene.fog = new THREE.Fog(CIELS[nom], 70, 330); }
   const m = etat.m;
   const d = {
     expo: M.renderer.toneMappingExposure, env: M.scene.environmentIntensity, ombre: M.sol.material.opacity,
@@ -861,6 +1030,7 @@ function afficherModele(m, teinte, entree) {
   appliquerTeinte(teinte, 0);
   appliquerAmbiance(etat.ambiance, 0);
   $('#toitures').hidden = !m.surToiture.length;
+  majSite();
   if (m.surToiture.length) appliquerToiture(m.toiture);
 
   // caméra : travelling d'arrivée à la première ouverture
@@ -899,6 +1069,8 @@ $('#toit').addEventListener('click', () => choisirVue(etat.toit ? 'ext' : 'int')
 document.querySelectorAll('.vues button').forEach((b) => b.addEventListener('click', () => choisirVue(b.dataset.vue)));
 document.querySelectorAll('.ambiance button').forEach((b) => b.addEventListener('click', () => appliquerAmbiance(b.dataset.ambiance)));
 document.querySelectorAll('#toitures button').forEach((b) => b.addEventListener('click', () => appliquerToiture(b.dataset.toiture)));
+$('#bouton-site').addEventListener('click', () => { etat.site = !etat.site; majSite(); });
+$('#bouton-survol').addEventListener('click', survoler);
 $('#titre').addEventListener('click', () => {
   if (matchMedia('(min-width: 900px)').matches) return;
   const ouverte = $('#fiche').classList.toggle('ouverte');
@@ -921,6 +1093,8 @@ window.sirius = {
   get toitPresent() { return !!etat.m?.toit; },
   get teinte() { return etat.teinte; },
   get ambiance() { return etat.ambiance; },
+  get site() { return !!(SITE && SITE.exterieur.visible); },
+  survoler() { survoler(); },
   get toiture() { return etat.m?.surToiture.length ? etat.m.toiture : null; },
   // diagnostic : objets touchés depuis l'œil dans une direction [x, y, z]
   sonde(d) {

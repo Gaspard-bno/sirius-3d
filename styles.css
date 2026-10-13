@@ -334,9 +334,12 @@ body[data-ecran="vue"] .menu { display: none; }
 .ambiance button[aria-pressed="true"] { background: rgba(231, 233, 241, .12); color: #fff; box-shadow: inset 0 0 0 1px rgba(31, 159, 250, .55); }
 .ambiance button[data-ambiance="soir"][aria-pressed="true"] { color: #FFC08A; box-shadow: inset 0 0 0 1px rgba(255, 156, 84, .6); }
 .ambiance button[data-ambiance="nuit"][aria-pressed="true"] { color: #C9D6FF; }
+.ambiance-sep { display: block; height: 1px; margin: 3px 6px; background: var(--bord); }
+#bouton-site[aria-pressed="true"] { color: #9FE0A8; box-shadow: inset 0 0 0 1px rgba(110, 200, 120, .55); background: rgba(231, 233, 241, .08); }
 @media (max-width: 899px) {
   .ambiance { top: calc(var(--haut) + 58px); left: 12px; right: auto; transform: none; grid-auto-flow: column; padding: 4px; border-radius: 16px; }
   .ambiance-lab { display: none; }
+  .ambiance-sep { width: 1px; height: auto; margin: 6px 2px; }
   .ambiance button { width: 50px; min-height: 44px; gap: 3px; font-size: 10px; }
   .ambiance button svg { width: 17px; height: 17px; }
 }
