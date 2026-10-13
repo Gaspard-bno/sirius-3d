@@ -3,12 +3,14 @@
 
 const MODELES = ['sirius24', 'sirius40'];
 const EMBED = window.__EMBED__ || null; // version hors ligne : JSON + GLB intégrés
+// nuancier de secours si le JSON n'en fournit pas (identique aux models/*.json du 13/10/2026)
 const TEINTES_DEFAUT = [
   { ral: '6019', hex: '#A1C3A9', nom: 'Vert pastel' },
   { ral: '1014', hex: '#F6EACE', nom: 'Ivoire' },
   { ral: '1001', hex: '#DCB68C', nom: 'Beige' },
   { ral: '7032', hex: '#D0C8BE', nom: 'Gris silex' },
-  { ral: '5024', hex: '#92B0AE', nom: 'Bleu pastel' },
+  { ral: '5024', hex: '#62A1D7', nom: 'Bleu pastel' },
+  { ral: '5007', hex: '#2C6B98', nom: 'Bleu brillant' },
 ];
 const reduit = matchMedia('(prefers-reduced-motion: reduce)');
 const $ = (s) => document.querySelector(s);
@@ -753,9 +755,9 @@ function survoler() {
 
 /* -------- toitures (24 m² : sur-toiture bois ou toit plat) -------- */
 const TOITURES = {
-  sirius24: { objets: ['Charpente', 'Couverture bois', 'Gouttière avant', 'Gouttière arrière', 'Descente avant', 'Descente arrière', 'Coude avant', 'Coude arrière'] },
+  sirius24: { objets: ['Charpente', 'Couverture bac acier', 'Rives de toit', 'Pignons', 'Gouttière avant', 'Gouttière arrière', 'Descente avant', 'Descente arrière', 'Coude avant', 'Coude arrière'] },
 };
-const NOMS_TOITURE = { bois: 'Sur-toiture bois', plat: 'Toit plat' };
+const NOMS_TOITURE = { bois: 'Toiture oléronnaise', plat: 'Toit plat' };
 function appliquerToiture(t) {
   const m = etat.m;
   if (!m) return;
@@ -763,7 +765,7 @@ function appliquerToiture(t) {
   m.surToiture.forEach((o) => { o.visible = t === 'bois'; });
   $('#toiture-nom').textContent = NOMS_TOITURE[t];
   const li = [...document.querySelectorAll('#fiche-liste li')].find((x) => /toit/i.test(x.textContent));
-  if (li) li.textContent = t === 'bois' ? 'Sur-toiture bois (charpente brute)' : 'Toit plat (bac acier)';
+  if (li) li.textContent = t === 'bois' ? 'Toiture oléronnaise, bac acier à joints debout' : 'Toit plat, bac acier';
   document.querySelectorAll('#toitures button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.toiture === t)));
   M.sale = true;
 }

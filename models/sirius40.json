@@ -9,7 +9,8 @@
   "Salle d’eau + WC séparé",
   "Pièce de vie 21,4 m²",
   "Verrière en pignon",
-  "Toiture imitation zinc",
+  "Toiture bac acier à joints debout",
+  "Intérieur tout bois",
   "Terrasse surélevée"
  ],
  "teintes": [
@@ -35,8 +36,13 @@
   },
   {
    "ral": "5024",
-   "hex": "#92B0AE",
+   "hex": "#62A1D7",
    "nom": "Bleu pastel"
+  },
+  {
+   "ral": "5007",
+   "hex": "#2C6B98",
+   "nom": "Bleu brillant"
   }
  ],
  "materiaux_teintables": [

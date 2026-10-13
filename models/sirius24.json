@@ -1,15 +1,16 @@
 {
  "id": "sirius24",
  "nom": "SIRIUS 24 m²",
- "accroche": "Studio · sur-toiture bois",
+ "accroche": "Studio · toiture oléronnaise",
  "dims": "6,00 × 4,00 m",
  "surface": "24 m²",
  "caracteristiques": [
   "Studio avec lit 160",
   "Salle d’eau + WC",
   "Cuisine équipée",
-  "Porte-fenêtre 2 vantaux",
-  "Sur-toiture bois (charpente brute)",
+  "Baie coulissante 3 vantaux 3,60 × 2,15 m",
+  "Toiture oléronnaise bac acier joints debout",
+  "Intérieur lambris bois clair",
   "Terrasse 3,60 × 2,15 m"
  ],
  "teintes": [
@@ -35,8 +36,13 @@
   },
   {
    "ral": "5024",
-   "hex": "#92B0AE",
+   "hex": "#62A1D7",
    "nom": "Bleu pastel"
+  },
+  {
+   "ral": "5007",
+   "hex": "#2C6B98",
+   "nom": "Bleu brillant"
   }
  ],
  "materiaux_teintables": [

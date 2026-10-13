@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#05070E">
-<meta name="description" content="Lodges bois SIRIUS : découvrez les modèles en 3D, soulevez le toit, essayez les teintes.">
-<title>Lodges SIRIUS — Visionneuse 3D</title>
+<meta name="theme-color" content="#F7F3EC">
+<meta name="description" content="Iziplace × Domaine les Oyats d’Oléron — lodges bois SIRIUS : découvrez les modèles en 3D, soulevez le toit, essayez les teintes.">
+<title>Lodges SIRIUS — Iziplace × Domaine les Oyats d’Oléron</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script type="importmap">
 {
@@ -30,16 +30,15 @@
 <!-- ============ MENU ============ -->
 <main id="menu" class="menu">
   <header class="tete">
-    <a class="marque" href="#" aria-label="DreamFly — accueil">
-      <img src="assets/df-logo.png" alt="" width="52" height="35">
-      <span>DreamFly</span>
+    <a class="marque" href="#" aria-label="Iziplace × Domaine les Oyats d’Oléron — accueil">
+      <img src="assets/logo_iziplace_oyats.svg" alt="Iziplace — Domaine les Oyats d’Oléron" width="403" height="100">
     </a>
     <span class="tete-info">Visionneuse 3D</span>
   </header>
 
   <section class="intro">
-    <p class="sur">Lodges bois · gamme SIRIUS</p>
-    <h1>Lodges SIRIUS<span>Découvrez les modèles en 3D</span></h1>
+    <p class="sur">Domaine les Oyats d’Oléron</p>
+    <h1>Lodges SIRIUS<span>Découvrez les deux modèles en 3D</span></h1>
     <ol class="etapes" aria-label="Mode d’emploi">
       <li><b>01</b>Tournez autour du lodge</li>
       <li><b>02</b>Soulevez le toit pour voir l’intérieur</li>
@@ -49,7 +48,7 @@
 
   <section class="cartes" id="cartes" aria-label="Modèles disponibles"></section>
 
-  <footer class="pied"><b>DreamFly</b> — visualisation 3D</footer>
+  <footer class="pied"><p>Iziplace × Domaine les Oyats d’Oléron</p><p class="pied-note">Visuels 3D non contractuels</p><p class="pied-real">Visualisation 3D : DreamFly</p></footer>
 </main>
 
 <!-- ============ VISIONNEUSE ============ -->
@@ -69,13 +68,12 @@
   </header>
 
   <aside class="fiche" id="fiche" aria-label="Fiche du modèle">
-    <p class="fiche-sur">Fiche technique</p>
+    <div class="fiche-tete"><p class="fiche-sur">Fiche technique</p><img class="fiche-logo" src="assets/logo_iziplace_oyats.svg" alt="Iziplace — Domaine les Oyats d’Oléron" width="403" height="100"></div>
     <dl class="fiche-chiffres">
       <div><dt>Surface</dt><dd id="fiche-surface">—</dd></div>
       <div><dt>Dimensions</dt><dd id="fiche-dims">—</dd></div>
     </dl>
     <ul class="fiche-liste" id="fiche-liste"></ul>
-    <p class="fiche-pied"><b>DreamFly</b> — visualisation 3D</p>
   </aside>
 
   <button class="ar" id="ar" type="button" hidden>
@@ -134,17 +132,16 @@
       <div class="toitures" id="toitures" hidden>
         <p class="teintes-lab">Toiture <span id="toiture-nom">—</span></p>
         <div class="toitures-choix" role="group" aria-label="Type de toiture">
-          <button type="button" data-toiture="bois" aria-pressed="true">Sur-toiture bois</button>
+          <button type="button" data-toiture="bois" aria-pressed="true">Toiture oléronnaise</button>
           <button type="button" data-toiture="plat" aria-pressed="false">Toit plat</button>
         </div>
       </div>
     </div>
   </div>
 
-  <p class="signature"><b>DreamFly</b> — visualisation 3D</p>
-
   <div class="chargement" id="chargement" role="status" aria-live="polite">
     <div class="chargement-boite">
+      <img class="chargement-logo" src="assets/logo_iziplace_oyats.svg" alt="Iziplace — Domaine les Oyats d’Oléron" width="403" height="100">
       <div class="chargement-dessin" id="chargement-dessin"></div>
       <p class="chargement-nom" id="chargement-nom">SIRIUS</p>
       <div class="jauge" aria-hidden="true"><span id="jauge"></span></div>
