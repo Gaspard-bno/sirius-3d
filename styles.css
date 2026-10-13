@@ -346,6 +346,26 @@ body[data-ecran="vue"] .menu { display: none; }
 .vue[data-ambiance="soir"]::after { opacity: 1; background: radial-gradient(70% 45% at 30% 70%, rgba(255, 138, 64, .16), transparent 70%); }
 .vue[data-ambiance="nuit"]::after { opacity: 1; background: rgba(2, 4, 12, .45); }
 
+.visite-pieces {
+  position: absolute; z-index: 4; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--bas) + var(--dock-h, 210px) + 12px);
+  display: flex; gap: 4px; padding: 4px; border-radius: 16px; max-width: calc(100% - 24px); overflow-x: auto; scrollbar-width: none;
+}
+.visite-pieces[hidden] { display: none; }
+.visite-pieces button {
+  flex: none; min-height: 38px; padding: 0 13px; border-radius: 12px;
+  font: 600 12.5px/1 var(--titre); color: var(--argent); white-space: nowrap;
+  transition: background .3s, color .3s;
+}
+.visite-pieces button[aria-pressed="true"] { background: rgba(231, 233, 241, .12); color: #fff; box-shadow: inset 0 0 0 1px rgba(31, 159, 250, .55); }
+.en-visite .aide { display: none; }
+
+.toitures { margin-top: 10px; }
+.toitures[hidden] { display: none; }
+.toitures-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; padding: 3px; border-radius: 12px; background: rgba(5, 7, 14, .45); border: 1px solid var(--bord); }
+.toitures-choix button { min-height: 34px; border-radius: 9px; font: 600 12px/1 var(--titre); color: var(--argent); transition: background .3s, color .3s; }
+.toitures-choix button[aria-pressed="true"] { background: rgba(231, 233, 241, .12); color: #fff; box-shadow: inset 0 0 0 1px rgba(31, 159, 250, .55); }
+
 /* Dock */
 .dock {
   position: absolute; z-index: 5; left: 12px; right: 12px; bottom: var(--bas);
@@ -382,7 +402,7 @@ body[data-ecran="vue"] .menu { display: none; }
 .toit-txt small { font: 400 11px/1.2 var(--mono); color: var(--argent); white-space: nowrap; }
 .toit[aria-checked="true"] .toit-txt small { color: rgba(255, 255, 255, .8); }
 
-.vues { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border-radius: 14px; background: rgba(5, 7, 14, .45); border: 1px solid var(--bord); }
+.vues { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 3px; border-radius: 14px; background: rgba(5, 7, 14, .45); border: 1px solid var(--bord); }
 .vues button {
   min-height: 44px; border-radius: 11px;
   display: flex; align-items: center; justify-content: center; gap: 7px;
@@ -502,6 +522,8 @@ body[data-ecran="vue"] .menu { display: none; }
 }
 
 @media (max-width: 520px) {
+  .vues button svg { display: none; }
+  .vues button { font-size: 13px; }
   .etiquette { padding: 5px 9px 5px 7px; gap: 6px; }
   .etiquette b { font-size: 12px; }
   .etiquette span:last-child { font-size: 10.5px; }

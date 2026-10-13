@@ -83,6 +83,8 @@
     Voir chez moi <small>AR</small>
   </button>
 
+  <nav class="visite-pieces verre" id="visite-pieces" aria-label="Aller dans une pièce" hidden></nav>
+
   <div class="ambiance verre" role="group" aria-label="Ambiance">
     <span class="ambiance-lab" aria-hidden="true">Ambiance</span>
     <button type="button" data-ambiance="jour" aria-pressed="true" aria-label="Jour">
@@ -114,11 +116,21 @@
       <button type="button" data-vue="plan" aria-pressed="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h9M13 4v16M13 15h7"/></svg>Plan
       </button>
+      <button type="button" data-vue="visite" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 8v6M9 21l3-7 3 7M8 11l4-3 4 3"/></svg>Visite
+      </button>
     </div>
 
     <div class="teintes">
       <p class="teintes-lab">Teinte <span id="teinte-nom">—</span></p>
       <div class="pastilles" id="pastilles" role="radiogroup" aria-label="Teinte du bardage"></div>
+      <div class="toitures" id="toitures" hidden>
+        <p class="teintes-lab">Toiture <span id="toiture-nom">—</span></p>
+        <div class="toitures-choix" role="group" aria-label="Type de toiture">
+          <button type="button" data-toiture="bois" aria-pressed="true">Sur-toiture bois</button>
+          <button type="button" data-toiture="plat" aria-pressed="false">Toit plat</button>
+        </div>
+      </div>
     </div>
   </div>
 

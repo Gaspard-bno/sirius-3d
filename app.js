@@ -227,7 +227,7 @@ function creerMoteur() {
     annulerTween('cam');
     if (!etat.interagi) { etat.interagi = true; $('#aide').classList.add('cachee'); }
     controls.autoRotate = false;
-    if (etat.vue) { etat.vue = null; majVues(); }
+    if (etat.vue && etat.vue !== 'plan' && etat.vue !== 'visite') { etat.vue = null; majVues(); }
   });
   controls.addEventListener('change', () => { M.sale = true; });
 
@@ -236,6 +236,7 @@ function creerMoteur() {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) M.sale = true; });
   redimensionner();
   renderer.setAnimationLoop(boucle);
+  suivreClic();
 }
 
 function redimensionner() {
@@ -343,12 +344,27 @@ function preparer(gltf, f) {
     racine.add(l);
     return l;
   });
+  const points = new THREE.Group();
+  points.visible = false;
+  const matPt = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false });
+  const matHalo = new THREE.MeshBasicMaterial({ color: 0x1f9ffa, transparent: true, opacity: 0.35, depthWrite: false });
+  f.pieces.forEach((p, i) => {
+    const g = new THREE.Group();
+    const anneau = new THREE.Mesh(new THREE.RingGeometry(0.17, 0.22, 40), matPt);
+    const disque = new THREE.Mesh(new THREE.CircleGeometry(0.17, 40), matHalo);
+    for (const o of [anneau, disque]) { o.rotation.x = -Math.PI / 2; o.userData.piece = i; o.renderOrder = 3; g.add(o); }
+    g.position.set(p.position[0], p.position[1] - HAUT_ETIQUETTE + 0.012, p.position[2]);
+    points.add(g);
+  });
+  racine.add(points);
+  const surToiture = (TOITURES[f.id]?.objets || [])
+    .map((n) => racine.getObjectByName(n) || racine.getObjectByName(nomNettoye(n))).filter(Boolean);
   const lumineux = [];
   racine.traverse((o) => {
     if (!o.isMesh) return;
     for (const m of [].concat(o.material)) if (m.name in EMISSIFS && !lumineux.includes(m)) { m.emissive.set(EMISSIFS[m.name]); lumineux.push(m); }
   });
-  return { racine, toit, toitY0: toit ? toit.position.y : 0, matsToit, teintables, bTout, bCorps, f, opaciteToit: 1, lampes, lumineux };
+  return { racine, toit, toitY0: toit ? toit.position.y : 0, matsToit, teintables, bTout, bCorps, f, opaciteToit: 1, lampes, lumineux, points, surToiture, toiture: 'bois' };
 }
 
 /* -------- vues caméra -------- */
@@ -442,15 +458,146 @@ function bougerToit(haut, opaciteFinale = 0.22) {
   });
 }
 
+// hauteur des étiquettes de pièces au-dessus du plancher (export Blender : sol + 1,10 m)
+const HAUT_ETIQUETTE = 1.1, HAUT_YEUX = 1.6;
+function reglerControles(nom) {
+  const c = M.controls, plan = nom === 'plan', visite = nom === 'visite';
+  c.enableRotate = !plan;
+  c.enableZoom = !visite;
+  c.enablePan = !visite;
+  c.rotateSpeed = visite ? -0.32 : 0.75;
+  c.minPolarAngle = visite ? Math.PI / 2 - 0.8 : 0;
+  c.maxPolarAngle = visite ? Math.PI / 2 + 0.6 : Math.PI / 2 - 0.06;
+  c.mouseButtons.LEFT = plan ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+  c.touches.ONE = plan ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+  if (etat.m) etat.m.points.visible = visite;
+  M.renderer.toneMappingExposure = AMBIANCES[etat.ambiance].expo * (visite ? 0.8 : 1);
+  M.sale = true;
+  $('#visite-pieces').hidden = !visite;
+  document.body.classList.toggle('en-visite', visite);
+}
+function oeil(i) {
+  const p = etat.m.f.pieces[i].position;
+  return new THREE.Vector3(p[0], p[1] - HAUT_ETIQUETTE + HAUT_YEUX, p[2]);
+}
+// points de vue de visite, en coordonnées du plan (m) : œil puis point regardé — choisis d'après les plans
+const VISITE = {
+  sirius40: { demi: [5, 2.186], vues: {
+    'Pièce de vie': [[3.4, 3.0], [0.2, 1.6, 1.3]], 'Chambre 1': [[8.15, 2.3], [9.7, 0.6, 0.75]], 'Chambre 2': [[6.58, 2.3], [4.9, 0.8, 0.75]],
+    'Salle d’eau': [[8.1, 2.95], [9.8, 3.9, 0.95]], 'WC': [[6.85, 3.5], [7.3, 4.2, 0.5]], 'Terrasse': [[-2.9, 2.19], [0.5, 2.19, 1.5]] } },
+  sirius24: { demi: [3, 2.0], vues: {
+    'Pièce de vie': [[5.45, 0.5], [2.0, 2.6, 0.9]], 'Salle d’eau': [[0.75, 1.2], [1.25, 3.3, 1.0]], 'WC': [[3.45, 3.3], [2.45, 3.8, 0.45]],
+    'Terrasse': [[3.45, -1.9], [3.45, 1.5, 1.4]] } },
+};
+function vueAuteur(i) {
+  const m = etat.m, def = VISITE[m.f.id], p = m.f.pieces[i];
+  const v = def?.vues[p.nom];
+  if (!v) return null;
+  const sol = p.position[1] - HAUT_ETIQUETTE;
+  const g = ([x, yp, h = HAUT_YEUX]) => new THREE.Vector3(x - def.demi[0], sol + h, def.demi[1] - yp);
+  const oeil = g(v[0]);
+  return { oeil, dir: g(v[1]).sub(oeil), incline: true };
+}
+// cadrage « photo » d'une pièce : regard vers la plus grande profondeur intérieure, œil reculé contre le mur opposé
+function cadragePiece(centre) {
+  const ray = new THREE.Raycaster(), cibles = [];
+  etat.m.racine.traverse((o) => { if (o.isMesh && o.visible && !('piece' in o.userData)) cibles.push(o); });
+  const portee = (d) => { ray.set(centre, d); ray.far = 9; const h = ray.intersectObjects(cibles, false)[0]; return h ? h.distance : Infinity; };
+  let dir = new THREE.Vector3(-1, 0, 0), dmax = -1;
+  for (let k = 0; k < 24; k++) {
+    const a = (k / 24) * Math.PI * 2, d = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+    const dist = portee(d);
+    if (dist !== Infinity && dist > dmax) { dmax = dist; dir = d; }
+  }
+  const dos = portee(dir.clone().negate());
+  const recul = dos === Infinity ? 0 : Math.min(1.4, Math.max(0, dos - 0.45));
+  return { dir, oeil: centre.clone().sub(dir.clone().multiplyScalar(recul)) };
+}
+function allerPiece(i, duree = 950, mode = 'degage') {
+  const m = etat.m, cam = M.camera, ctl = M.controls;
+  if (!m || !m.f.pieces[i]) return Promise.resolve();
+  const depuis = ctl.target.clone();
+  etat.piece = i;
+  document.querySelectorAll('#visite-pieces button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.piece === i)));
+  let cible = oeil(i);
+  let dir;
+  const auteur = vueAuteur(i);
+  if (auteur) {
+    cible = auteur.oeil; dir = auteur.dir;
+  } else if (etat.vueAvant !== 'visite') {
+    // première entrée : on regarde vers l'extérieur (verrière, porte-fenêtre), dos au centre du lodge
+    dir = cible.clone().sub(m.bCorps.getCenter(new THREE.Vector3())).setY(0);
+    if (dir.lengthSq() < 0.25) dir.set(-1, 0, 0);
+  } else if (mode === 'marche' && cible.distanceTo(depuis) > 0.3) {
+    dir = cible.clone().sub(depuis);
+  } else {
+    const c = cadragePiece(cible);
+    dir = c.dir; cible = c.oeil;
+  }
+  if (!auteur) dir.setY(0);
+  dir.normalize();
+  const t0 = ctl.target.clone(), c0 = cam.position.clone(), f0 = cam.fov;
+  const c1 = cible.clone().sub(dir.clone().multiplyScalar(0.05));
+  ctl.minDistance = 0.01; ctl.maxDistance = 1000;
+  return tween('cam', duree, (p) => {
+    ctl.target.lerpVectors(t0, cible, p);
+    cam.position.lerpVectors(c0, c1, p);
+    cam.fov = THREE.MathUtils.lerp(f0, 68, p);
+    cam.updateProjectionMatrix();
+    cam.lookAt(ctl.target);
+  }).then(() => { ctl.minDistance = ctl.maxDistance = 0.05; etat.vueAvant = 'visite'; });
+}
 function choisirVue(nom) {
   if (!etat.m) return;
+  etat.vueAvant = etat.vue;
   etat.vue = nom;
   etat.interagi = true;
   $('#aide').classList.add('cachee');
   majVues();
-  if (nom === 'ext') bougerToit(false);
+  reglerControles(nom);
+  if (nom === 'ext' || nom === 'visite') bougerToit(false);
   else bougerToit(true, nom === 'plan' ? 0 : 0.22);
+  if (nom === 'visite') { allerPiece(etat.vueAvant === 'visite' ? etat.piece ?? 0 : 0, 1400); return; }
   allerA(nom);
+}
+function construireVisite(f) {
+  $('#visite-pieces').innerHTML = f.pieces.map((p, i) => `<button type="button" data-piece="${i}" aria-pressed="false">${esc(p.nom)}</button>`).join('');
+  document.querySelectorAll('#visite-pieces button').forEach((b) => b.addEventListener('click', () => allerPiece(+b.dataset.piece)));
+}
+// clic (sans glisser) sur un point au sol : on s'y rend
+let appui = null;
+function suivreClic() {
+  const cv = $('#scene');
+  cv.addEventListener('pointerdown', (e) => { appui = { x: e.clientX, y: e.clientY }; });
+  cv.addEventListener('pointerup', (e) => {
+    if (!appui || etat.vue !== 'visite' || !etat.m) return;
+    const d = Math.hypot(e.clientX - appui.x, e.clientY - appui.y);
+    appui = null;
+    if (d > 6) return;
+    const r = cv.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(ndc, M.camera);
+    const hit = ray.intersectObjects(etat.m.points.children, true)[0];
+    if (hit) allerPiece(hit.object.userData.piece, 950, 'marche');
+  });
+}
+
+/* -------- toitures (24 m² : sur-toiture bois ou toit plat) -------- */
+const TOITURES = {
+  sirius24: { objets: ['Charpente', 'Couverture bois', 'Gouttière avant', 'Gouttière arrière', 'Descente avant', 'Descente arrière', 'Coude avant', 'Coude arrière'] },
+};
+const NOMS_TOITURE = { bois: 'Sur-toiture bois', plat: 'Toit plat' };
+function appliquerToiture(t) {
+  const m = etat.m;
+  if (!m) return;
+  m.toiture = t;
+  m.surToiture.forEach((o) => { o.visible = t === 'bois'; });
+  $('#toiture-nom').textContent = NOMS_TOITURE[t];
+  const li = [...document.querySelectorAll('#fiche-liste li')].find((x) => /toit/i.test(x.textContent));
+  if (li) li.textContent = t === 'bois' ? 'Sur-toiture bois (charpente brute)' : 'Toit plat (bac acier)';
+  document.querySelectorAll('#toitures button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.toiture === t)));
+  M.sale = true;
 }
 
 /* -------- ambiances -------- */
@@ -485,7 +632,7 @@ function appliquerAmbiance(nom, duree = 700) {
   const dir = new THREE.Vector3(...a.dir).normalize();
   const lerp = (x, y, p) => x + (y - x) * p;
   tween('ambiance', duree, (p) => {
-    M.renderer.toneMappingExposure = lerp(d.expo, a.expo, p);
+    M.renderer.toneMappingExposure = lerp(d.expo, a.expo * (etat.vue === 'visite' ? 0.8 : 1), p);
     M.scene.environmentIntensity = lerp(d.env, a.env, p);
     M.sol.material.opacity = lerp(d.ombre, a.ombre, p);
     for (const k of ['hemi', 'soleil', 'contre']) { M[k].color.lerpColors(d[k][0], cible(k), p); M[k].intensity = lerp(d[k][1], a[k][1], p); }
@@ -688,6 +835,9 @@ function afficherModele(m, teinte, entree) {
   }
   etat.toit = false;
   etat.vue = 'ext';
+  etat.vueAvant = null;
+  construireVisite(m.f);
+  reglerControles('ext');
   majVues();
   majToit();
   majEtiquettes();
@@ -710,6 +860,8 @@ function afficherModele(m, teinte, entree) {
 
   appliquerTeinte(teinte, 0);
   appliquerAmbiance(etat.ambiance, 0);
+  $('#toitures').hidden = !m.surToiture.length;
+  if (m.surToiture.length) appliquerToiture(m.toiture);
 
   // caméra : travelling d'arrivée à la première ouverture
   redimensionner();
@@ -746,6 +898,7 @@ function fermerFiche() {
 $('#toit').addEventListener('click', () => choisirVue(etat.toit ? 'ext' : 'int'));
 document.querySelectorAll('.vues button').forEach((b) => b.addEventListener('click', () => choisirVue(b.dataset.vue)));
 document.querySelectorAll('.ambiance button').forEach((b) => b.addEventListener('click', () => appliquerAmbiance(b.dataset.ambiance)));
+document.querySelectorAll('#toitures button').forEach((b) => b.addEventListener('click', () => appliquerToiture(b.dataset.toiture)));
 $('#titre').addEventListener('click', () => {
   if (matchMedia('(min-width: 900px)').matches) return;
   const ouverte = $('#fiche').classList.toggle('ouverte');
@@ -768,6 +921,13 @@ window.sirius = {
   get toitPresent() { return !!etat.m?.toit; },
   get teinte() { return etat.teinte; },
   get ambiance() { return etat.ambiance; },
+  get toiture() { return etat.m?.surToiture.length ? etat.m.toiture : null; },
+  // diagnostic : objets touchés depuis l'œil dans une direction [x, y, z]
+  sonde(d) {
+    const ray = new THREE.Raycaster(M.controls.target.clone(), new THREE.Vector3(...d).normalize());
+    return ray.intersectObject(etat.m.racine, true).slice(0, 4).map((h) => `${h.object.name} · ${[].concat(h.object.material)[0]?.name} · ${h.distance.toFixed(2)} · ${[].concat(h.object.material)[0]?.side}`);
+  },
+  get camera() { return M ? { pos: M.camera.position.toArray().map((v) => +v.toFixed(2)), cible: M.controls.target.toArray().map((v) => +v.toFixed(2)) } : null; },
   couleur(nom) {
     const mat = etat.m?.teintables.find((x) => x.name === nom);
     return mat ? '#' + mat.color.getHexString() : null;
