@@ -1,6 +1,6 @@
 {
  "id": "sirius40",
- "nom": "SIRIUS 40 m²",
+ "nom": "Ecolodge 40 m²",
  "accroche": "2 chambres · pignon vitré",
  "dims": "10,00 × 4,37 m",
  "surface": "40 m²",
@@ -8,7 +8,7 @@
   "2 chambres",
   "Salle d’eau + WC séparé",
   "Pièce de vie 21,4 m²",
-  "Verrière en pignon",
+  "Pignon vitré, porte-fenêtre 2 vantaux",
   "Toiture bac acier à joints debout",
   "Intérieur tout bois",
   "Terrasse surélevée"
@@ -17,38 +17,43 @@
   {
    "ral": "6019",
    "hex": "#A1C3A9",
-   "nom": "Vert pastel"
+   "nom": "Vert pastel",
+   "menuiserie": "gris clair"
   },
   {
    "ral": "1014",
    "hex": "#F6EACE",
-   "nom": "Ivoire"
+   "nom": "Ivoire",
+   "menuiserie": "noir"
   },
   {
    "ral": "1001",
    "hex": "#DCB68C",
-   "nom": "Beige"
+   "nom": "Beige",
+   "menuiserie": "gris clair"
   },
   {
    "ral": "7032",
    "hex": "#D0C8BE",
-   "nom": "Gris silex"
+   "nom": "Gris silex",
+   "menuiserie": "noir"
   },
   {
    "ral": "5024",
    "hex": "#62A1D7",
-   "nom": "Bleu pastel"
+   "nom": "Bleu pastel",
+   "menuiserie": "blanc"
   },
   {
    "ral": "5007",
    "hex": "#2C6B98",
-   "nom": "Bleu brillant"
+   "nom": "Bleu brillant",
+   "menuiserie": "blanc"
   }
  ],
  "materiaux_teintables": [
   "Bardage",
-  "Cadre lisse",
-  "Menuiseries"
+  "Cadre lisse"
  ],
  "noeud_toit": "Toit",
  "levee_toit": 2.2,

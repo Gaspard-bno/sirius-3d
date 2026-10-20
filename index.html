@@ -5,8 +5,8 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F7F3EC">
-<meta name="description" content="Iziplace × Domaine les Oyats d’Oléron — lodges bois SIRIUS : découvrez les modèles en 3D, soulevez le toit, essayez les teintes.">
-<title>Lodges SIRIUS — Iziplace × Domaine les Oyats d’Oléron</title>
+<meta name="description" content="Domaine les Oyats d’Oléron — les Ecolodges en 3D : découvrez les modèles, soulevez le toit, essayez les teintes, survolez le Domaine de demain.">
+<title>Ecolodges · Domaine les Oyats d’Oléron — Visionneuse 3D</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,19 +30,19 @@
 <!-- ============ MENU ============ -->
 <main id="menu" class="menu">
   <header class="tete">
-    <a class="marque" href="#" aria-label="Iziplace × Domaine les Oyats d’Oléron — accueil">
-      <img src="assets/logo_iziplace_oyats_web.png" alt="Iziplace — Domaine les Oyats d’Oléron" width="304" height="100">
+    <a class="marque" href="#" aria-label="Domaine les Oyats d’Oléron — accueil">
+      <img src="assets/logo_oyats_web.png" alt="Domaine les Oyats d’Oléron" width="600" height="364">
     </a>
     <span class="tete-info">Visionneuse 3D</span>
   </header>
 
   <section class="intro">
     <p class="sur">Domaine les Oyats d’Oléron</p>
-    <h1>Lodges SIRIUS<span>Découvrez les deux modèles en 3D</span></h1>
+    <h1>Les Ecolodges<span>Les deux modèles et le Domaine, en 3D</span></h1>
     <ol class="etapes" aria-label="Mode d’emploi">
       <li><b>01</b>Tournez autour du lodge</li>
       <li><b>02</b>Soulevez le toit pour voir l’intérieur</li>
-      <li><b>03</b>Essayez les teintes du bardage</li>
+      <li><b>03</b>Essayez les teintes et menuiseries</li>
     </ol>
   </section>
 
@@ -61,14 +61,14 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
     </a>
     <button class="titre" id="titre" type="button" aria-expanded="false" aria-controls="fiche">
-      <span class="titre-nom" id="titre-nom" tabindex="-1">SIRIUS</span>
+      <span class="titre-nom" id="titre-nom" tabindex="-1">Ecolodge</span>
       <span class="titre-meta"><span id="titre-dims">—</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
     </button>
     <nav class="bascule" id="bascule" aria-label="Changer de modèle"></nav>
   </header>
 
   <aside class="fiche" id="fiche" aria-label="Fiche du modèle">
-    <div class="fiche-tete"><p class="fiche-sur">Fiche technique</p><img class="fiche-logo" src="assets/logo_iziplace_oyats_web.png" alt="Iziplace — Domaine les Oyats d’Oléron" width="304" height="100"></div>
+    <div class="fiche-tete"><p class="fiche-sur">Fiche technique</p><img class="fiche-logo" src="assets/logo_oyats_web.png" alt="Domaine les Oyats d’Oléron" width="600" height="364"></div>
     <dl class="fiche-chiffres">
       <div><dt>Surface</dt><dd id="fiche-surface">—</dd></div>
       <div><dt>Dimensions</dt><dd id="fiche-dims">—</dd></div>
@@ -76,12 +76,22 @@
     <ul class="fiche-liste" id="fiche-liste"></ul>
   </aside>
 
-  <button class="ar" id="ar" type="button" hidden>
+  <button class="ar" id="ar" type="button" aria-label="Voir chez moi en réalité augmentée" title="Voir chez moi (réalité augmentée)" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
     Voir chez moi <small>AR</small>
   </button>
 
   <nav class="visite-pieces verre" id="visite-pieces" aria-label="Aller dans une pièce" hidden></nav>
+
+  <button class="boussole" id="boussole" type="button" aria-label="Orienter le nord vers le haut" title="Nord en haut">
+    <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="bq-cercle" cx="22" cy="22" r="17"/><g id="boussole-aiguille"><path class="bq-nord" d="M22 7l4.2 15h-8.4z"/><path class="bq-sud" d="M22 37l-4.2-15h8.4z"/><text x="22" y="5.2" text-anchor="middle">N</text></g></svg>
+  </button>
+
+  <div class="lodge-carte" id="lodge-carte" role="group" aria-label="Lodge sélectionné" inert>
+    <div class="lc-tete"><span class="lc-pastille" aria-hidden="true"></span><p class="lc-txt"><b class="lc-nom">Ecolodge</b><span class="lc-meta">—</span></p></div>
+    <a class="lc-voir" href="#">Voir ce modèle<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+  <ul class="sr-only" id="lodges-liste" aria-label="Lodges du Domaine"></ul>
 
   <div class="ambiance verre" role="group" aria-label="Ambiance">
     <span class="ambiance-lab" aria-hidden="true">Ambiance</span>
@@ -103,12 +113,12 @@
     </button>
   </div>
 
-  <p class="aide" id="aide"><span class="aide-tactile">Glissez pour tourner · pincez pour zoomer</span><span class="aide-souris">Glissez pour tourner · molette pour zoomer</span></p>
+  <p class="aide" id="aide"><span class="aide-tactile">Glissez pour tourner · pincez pour zoomer</span><span class="aide-souris">Glissez pour tourner · molette pour zoomer</span><span class="aide-dom-tactile">Touchez un lodge pour le découvrir</span><span class="aide-dom-souris">Survolez un lodge pour le découvrir</span></p>
 
   <div class="dock" id="dock">
     <button class="toit" id="toit" type="button" role="switch" aria-checked="false">
       <span class="piste" aria-hidden="true"><span class="bille"></span></span>
-      <span class="toit-txt"><b>Voir l’intérieur</b><small id="toit-sous">Le toit se soulève</small></span>
+      <span class="toit-txt"><b>Lever le toit</b><small id="toit-sous">Pour voir l’intérieur</small></span>
     </button>
 
     <div class="vues" role="group" aria-label="Vues">
@@ -123,6 +133,16 @@
       </button>
       <button type="button" data-vue="visite" aria-pressed="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 8v6M9 21l3-7 3 7M8 11l4-3 4 3"/></svg>Visite
+      </button>
+    </div>
+
+    <div class="dock-domaine">
+      <div class="legende" id="legende" role="group" aria-label="Légende">
+        <button type="button" data-type="sirius24" aria-pressed="false"><span class="leg-ico leg-24" aria-hidden="true"></span><span class="leg-txt">Ecolodge <em>24 m²</em></span><b>9</b></button>
+        <button type="button" data-type="sirius40" aria-pressed="false"><span class="leg-ico leg-40" aria-hidden="true"></span><span class="leg-txt">Ecolodge <em>40 m²</em></span><b>10</b></button>
+      </div>
+      <button class="recentrer" id="recentrer" type="button" aria-label="Recentrer la vue" title="Recentrer la vue">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg><span>Recentrer</span>
       </button>
     </div>
 
@@ -141,9 +161,9 @@
 
   <div class="chargement" id="chargement" role="status" aria-live="polite">
     <div class="chargement-boite">
-      <img class="chargement-logo" src="assets/logo_iziplace_oyats_web.png" alt="Iziplace — Domaine les Oyats d’Oléron" width="304" height="100">
+      <img class="chargement-logo" src="assets/logo_oyats_web.png" alt="Domaine les Oyats d’Oléron" width="600" height="364">
       <div class="chargement-dessin" id="chargement-dessin"></div>
-      <p class="chargement-nom" id="chargement-nom">SIRIUS</p>
+      <p class="chargement-nom" id="chargement-nom">Ecolodge</p>
       <div class="jauge" aria-hidden="true"><span id="jauge"></span></div>
       <p class="chargement-txt" id="chargement-txt">Préparation de la maquette…</p>
       <div class="chargement-erreur" id="chargement-erreur" hidden>

@@ -1,6 +1,6 @@
 {
  "id": "sirius24",
- "nom": "SIRIUS 24 m²",
+ "nom": "Ecolodge 24 m²",
  "accroche": "Studio · toiture oléronnaise",
  "dims": "6,00 × 4,00 m",
  "surface": "24 m²",
@@ -17,37 +17,42 @@
   {
    "ral": "6019",
    "hex": "#A1C3A9",
-   "nom": "Vert pastel"
+   "nom": "Vert pastel",
+   "menuiserie": "gris clair"
   },
   {
    "ral": "1014",
    "hex": "#F6EACE",
-   "nom": "Ivoire"
+   "nom": "Ivoire",
+   "menuiserie": "noir"
   },
   {
    "ral": "1001",
    "hex": "#DCB68C",
-   "nom": "Beige"
+   "nom": "Beige",
+   "menuiserie": "gris clair"
   },
   {
    "ral": "7032",
    "hex": "#D0C8BE",
-   "nom": "Gris silex"
+   "nom": "Gris silex",
+   "menuiserie": "noir"
   },
   {
    "ral": "5024",
    "hex": "#62A1D7",
-   "nom": "Bleu pastel"
+   "nom": "Bleu pastel",
+   "menuiserie": "blanc"
   },
   {
    "ral": "5007",
    "hex": "#2C6B98",
-   "nom": "Bleu brillant"
+   "nom": "Bleu brillant",
+   "menuiserie": "blanc"
   }
  ],
  "materiaux_teintables": [
-  "Bardage",
-  "Menuiseries"
+  "Bardage"
  ],
  "noeud_toit": "Toit",
  "levee_toit": 2.0,
