@@ -726,3 +726,8 @@ body[data-ecran="vue"] .menu { display: none; }
   .recentrer span { display: none; }
   .recentrer { width: 46px; padding: 0; justify-content: center; }
 }
+
+/* Bouton « Lever le toit » retiré (demande Gaspard 20/10) : la vue Intérieur lève le toit */
+.toit { display: none !important; }
+@media (min-width: 900px) { .dock { grid-template-columns: auto 1fr; } }
+@media (max-width: 899px) { .dock { grid-template-columns: minmax(0, 1fr); grid-template-areas: "vues" "teintes"; } }
