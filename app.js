@@ -446,7 +446,9 @@ function vueCible(nom) {
   if (nom === 'int') return { cible: centreInterieur(m), rayon: distancePour(sph.radius * (portrait ? 0.9 : 0.95), fov), phi: 0.9, theta: portrait ? 0.9 : 0.5, fov };
   const c = sph.center.clone();
   c.y = m.bTout.min.y + (m.bTout.max.y - m.bTout.min.y) * 0.42;
-  return { cible: c, rayon: distancePour(sph.radius * (portrait ? 0.9 : 0.95), fov), phi: 1.2, theta: portrait ? 1.0 : 0.62, fov };
+  // le 40 m² s'ouvre face à son pignon vitré (la baie), en trois-quarts
+  const theta = m.f.id === 'sirius40' ? (portrait ? -0.75 : -0.85) : (portrait ? 1.0 : 0.62);
+  return { cible: c, rayon: distancePour(sph.radius * (portrait ? 0.9 : 0.95), fov), phi: 1.2, theta, fov };
 }
 function allerA(nom, duree = 1100, depart) {
   const v = vueCible(nom);
