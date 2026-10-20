@@ -201,7 +201,9 @@ body[data-ecran="vue"] .menu { display: none; }
   font: 500 11px/1.4 var(--texte); letter-spacing: .04em; color: var(--marine); text-align: center;
 }
 .pied-note { font-size: 10.5px; color: var(--doux); }
-.pied-real { margin-top: 10px; font-size: 9.5px; color: var(--pale); letter-spacing: .03em; }
+.pied-real { margin-top: 10px; font-size: 9.5px; color: var(--doux); letter-spacing: .03em; }
+.cartes:empty { min-height: 1590px; }
+@media (min-width: 760px) { .cartes:empty { min-height: 896px; } }
 
 /* Dessin d'élévation (vignette de secours + chargement) */
 .dessin { overflow: visible; }

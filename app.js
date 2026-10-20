@@ -133,7 +133,7 @@ async function construireMenu() {
       <div class="vignette">
         <span class="vignette-num">${String(i + 1).padStart(2, '0')} / ${String(liste.length + 1).padStart(2, '0')}</span>
         ${dessinLodge(longueur(f))}
-        ${vignette(f) ? `<img alt="" loading="lazy" src="${esc(vignette(f))}">` : ''}
+        ${vignette(f) ? `<img alt="" ${i === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="1000" height="567" src="${esc(vignette(f))}">` : ''}
       </div>
       <div class="carte-corps">
         <div class="carte-ligne">
